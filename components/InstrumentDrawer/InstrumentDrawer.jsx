@@ -7,35 +7,53 @@ const instruments = [
   { 
     id: 'guitar', 
     name: 'Gitar', 
-    emoji: '🎸',
-    active: true // Varsayılan aktif enstrüman
+    emoji: '🎸'
   },
   { 
     id: 'violin', 
     name: 'Keman', 
-    emoji: '🎻',
-    active: false
+    emoji: '🎻'
   },
   { 
     id: 'ukulele', 
     name: 'Ukulele', 
-    emoji: '🪕',
-    active: false
+    emoji: '🪕'
   },
 ];
 
+// Ritim seçenekleri
+const rhythmOptions = [
+  {
+    id: 'metronome',
+    name: 'Metronome',
+    emoji: '🥁'
+  },
+  {
+    id: 'tapToBpm',
+    name: 'Tap to BPM',
+    emoji: '👆'
+  }
+];
+
 /**
- * Enstrüman seçimi için çekmece menü bileşeni
+ * Enstrüman ve ritim seçimi için çekmece menü bileşeni
  * @param {string} selectedInstrument - Seçili enstrüman ID'si
+ * @param {string} selectedRhythm - Seçili ritim ID'si
  * @param {function} onSelectInstrument - Enstrüman seçildiğinde çağrılan fonksiyon
+ * @param {function} onSelectRhythm - Ritim seçildiğinde çağrılan fonksiyon
  * @param {function} onClose - Çekmece kapatılırken çağrılan fonksiyon
  */
-const InstrumentDrawer = ({ selectedInstrument, onSelectInstrument, onClose }) => {
+const InstrumentDrawer = ({ selectedInstrument, selectedRhythm, onSelectInstrument, onSelectRhythm, onClose }) => {
   
   const handleSelectInstrument = useCallback((instrumentId) => {
-    // Reanimated ile smooth, timeout gereksiz
+    console.log('InstrumentDrawer: Enstrüman seçildi:', instrumentId);
     onSelectInstrument(instrumentId);
   }, [onSelectInstrument]);
+
+  const handleSelectRhythm = useCallback((rhythmId) => {
+    console.log('InstrumentDrawer: Ritim seçildi:', rhythmId);
+    onSelectRhythm(rhythmId);
+  }, [onSelectRhythm]);
 
   return (
     <View style={styles.container}>
@@ -46,59 +64,117 @@ const InstrumentDrawer = ({ selectedInstrument, onSelectInstrument, onClose }) =
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
-        {/* Başlık */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Enstrüman Seç</Text>
+        {/* Enstrüman Bölümü */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Enstrüman</Text>
+          <View style={styles.sectionDivider} />
+          <View style={styles.instrumentsList}>
+            {instruments.map((instrument) => {
+              const isSelected = selectedInstrument === instrument.id;
+              console.log(`Instrument ${instrument.name}: selectedInstrument=${selectedInstrument}, isSelected=${isSelected}`);
+              
+              return (
+                <TouchableOpacity
+                  key={instrument.id}
+                  style={[
+                    styles.instrumentItem,
+                    isSelected && styles.instrumentItemSelected
+                  ]}
+                  onPress={() => handleSelectInstrument(instrument.id)}
+                  activeOpacity={0.7}
+                >
+                  {/* Seçili enstrüman için gradient arka plan - React 18 uyumlu */}
+                  <LinearGradient
+                    colors={isSelected 
+                      ? ['rgba(234,80,111,0.15)', 'rgba(234,80,111,0.05)']
+                      : ['transparent', 'transparent']
+                    }
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  />
+                  
+                  {/* Enstrüman emoji'si */}
+                  <Text style={styles.instrumentEmoji}>
+                    {instrument.emoji}
+                  </Text>
+                  
+                  {/* Enstrüman adı */}
+                  <Text style={[
+                    styles.instrumentName,
+                    isSelected && styles.instrumentNameSelected
+                  ]}>
+                    {instrument.name}
+                  </Text>
+                  
+                  {/* Seçili işareti */}
+                  {isSelected && (
+                    <View style={styles.selectedIndicator}>
+                      <Text style={styles.selectedCheckmark}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
-        {/* Enstrüman listesi */}
-        <View style={styles.instrumentsList}>
-          {instruments.map((instrument) => {
-            const isSelected = selectedInstrument === instrument.id;
-            
-            return (
-              <TouchableOpacity
-                key={instrument.id}
-                style={[
-                  styles.instrumentItem,
-                  isSelected && styles.instrumentItemSelected
-                ]}
-                onPress={() => handleSelectInstrument(instrument.id)}
-                activeOpacity={0.7}
-              >
-                {/* Seçili enstrüman için gradient arka plan - React 18 uyumlu */}
-                <LinearGradient
-                  colors={isSelected 
-                    ? ['rgba(234,80,111,0.15)', 'rgba(234,80,111,0.05)']
-                    : ['transparent', 'transparent']
-                  }
-                  style={StyleSheet.absoluteFill}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                />
-                
-                {/* Enstrüman emoji'si */}
-                <Text style={styles.instrumentEmoji}>
-                  {instrument.emoji}
-                </Text>
-                
-                {/* Enstrüman adı */}
-                <Text style={[
-                  styles.instrumentName,
-                  isSelected && styles.instrumentNameSelected
-                ]}>
-                  {instrument.name}
-                </Text>
-                
-                {/* Seçili işareti */}
-                {isSelected && (
-                  <View style={styles.selectedIndicator}>
-                    <Text style={styles.selectedCheckmark}>✓</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
+        {/* Dikey boşluk */}
+        <View style={styles.spacer} />
+
+        {/* Ritim Bölümü */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Ritim</Text>
+          <View style={styles.sectionDivider} />
+          <View style={styles.rhythmList}>
+            {rhythmOptions.map((rhythm) => {
+              const isSelected = selectedRhythm === rhythm.id;
+              console.log(`Rhythm ${rhythm.name}: selectedRhythm=${selectedRhythm}, isSelected=${isSelected}`);
+              
+              return (
+                <TouchableOpacity
+                  key={rhythm.id}
+                  style={[
+                    styles.rhythmItem,
+                    isSelected && styles.rhythmItemSelected
+                  ]}
+                  onPress={() => handleSelectRhythm(rhythm.id)}
+                  activeOpacity={0.7}
+                >
+                  {/* Seçili ritim için gradient arka plan */}
+                  <LinearGradient
+                    colors={isSelected 
+                      ? ['rgba(234,80,111,0.15)', 'rgba(234,80,111,0.05)']
+                      : ['transparent', 'transparent']
+                    }
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  />
+                  
+                  {/* Ritim emoji'si */}
+                  <Text style={styles.rhythmEmoji}>
+                    {rhythm.emoji}
+                  </Text>
+                  
+                  {/* Ritim adı */}
+                  <Text style={[
+                    styles.rhythmName,
+                    isSelected && styles.rhythmNameSelected
+                  ]}>
+                    {rhythm.name}
+                  </Text>
+                  
+                  {/* Seçili işareti */}
+                  {isSelected && (
+                    <View style={styles.selectedIndicator}>
+                      <Text style={styles.selectedCheckmark}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         {/* Footer bilgi metni */}
@@ -123,25 +199,34 @@ const styles = StyleSheet.create({
   drawerBackground: {
     flex: 1,
     paddingTop: 50,
-    paddingHorizontal: 16, // Geri düşürüldü: 18 → 16
+    paddingHorizontal: 16,
     paddingBottom: 20,
   },
-  header: {
+  section: {
     marginBottom: 20,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
-  headerTitle: {
-    fontSize: 20,
+  sectionTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#EA506F',
-    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 8,
     letterSpacing: 0.5,
     fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
   },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 12,
+  },
+  spacer: {
+    height: 20,
+  },
   instrumentsList: {
-    flex: 1,
+    marginBottom: 16,
+  },
+  rhythmList: {
+    marginBottom: 16,
   },
   instrumentItem: {
     flexDirection: 'row',
@@ -178,14 +263,48 @@ const styles = StyleSheet.create({
     color: '#EA506F',
     fontWeight: 'bold',
   },
+  rhythmItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginVertical: 3,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  rhythmItemSelected: {
+    borderColor: 'rgba(234,80,111,0.3)',
+    backgroundColor: 'rgba(234,80,111,0.05)',
+  },
+  rhythmEmoji: {
+    fontSize: 24,
+    marginRight: 14,
+    width: 34,
+    textAlign: 'center',
+  },
+  rhythmName: {
+    fontSize: 16,
+    color: '#bfc2c7',
+    fontWeight: '500',
+    flex: 1,
+    letterSpacing: 0.3,
+    fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
+  },
+  rhythmNameSelected: {
+    color: '#EA506F',
+    fontWeight: 'bold',
+  },
   selectedIndicator: {
-    width: 20, // Biraz küçült: 22 → 20
-    height: 20, // Biraz küçült: 22 → 20
-    borderRadius: 10, // Biraz küçült: 11 → 10
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#EA506F',
     justifyContent: 'center',
     alignItems: 'center',
-    // marginLeft kaldırıldı - checkmark artık yakın
   },
   selectedCheckmark: {
     color: 'white',

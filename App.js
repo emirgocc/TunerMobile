@@ -36,6 +36,7 @@ export default function App() {
   
   // Çekmece menü için yeni state'ler
   const [selectedInstrument, setSelectedInstrument] = useState('guitar');
+  const [selectedRhythm, setSelectedRhythm] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
   const MAX_CENTS_JUMP = 8;
@@ -91,8 +92,25 @@ export default function App() {
     
     // State güncelleme
     setSelectedInstrument(instrumentId);
-    closeDrawer();
-    // Şu an için sadece UI değişiyor, akort mantığı aynı kalıyor
+    setSelectedRhythm(null);
+    
+    // Animasyonlu kapanma için gecikme
+    setTimeout(() => {
+      closeDrawer();
+    }, 150);
+  }, [closeDrawer]);
+
+  const handleSelectRhythm = useCallback((rhythmId) => {
+    console.log('Seçilen ritim:', rhythmId);
+    
+    // State güncelleme
+    setSelectedRhythm(rhythmId);
+    setSelectedInstrument(null);
+    
+    // Animasyonlu kapanma için gecikme
+    setTimeout(() => {
+      closeDrawer();
+    }, 150);
   }, [closeDrawer]);
 
   // Gesture handler - sürükleyerek kapatma (basitleştirildi)
@@ -405,10 +423,15 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          {/* Seçili enstrüman - ayrı satır */}
+          {/* Seçili mod - ayrı satır */}
           <View style={styles.instrumentContainer}>
             <Text style={styles.instrumentLabel}>
-              {instrumentNames[selectedInstrument]}
+              {selectedInstrument && instrumentNames[selectedInstrument] 
+                ? instrumentNames[selectedInstrument] 
+                : selectedRhythm 
+                  ? (selectedRhythm === 'metronome' ? 'Metronome' : 'Tap to BPM')
+                  : 'Gitar'
+              }
             </Text>
           </View>
 
@@ -459,7 +482,9 @@ export default function App() {
               <Animated.View style={[styles.drawerAnimated, drawerAnimatedStyle]}>
                 <InstrumentDrawer
                   selectedInstrument={selectedInstrument}
+                  selectedRhythm={selectedRhythm}
                   onSelectInstrument={handleSelectInstrument}
+                  onSelectRhythm={handleSelectRhythm}
                   onClose={closeDrawer}
                 />
               </Animated.View>
