@@ -46,12 +46,10 @@ const rhythmOptions = [
 const InstrumentDrawer = ({ selectedInstrument, selectedRhythm, onSelectInstrument, onSelectRhythm, onClose }) => {
   
   const handleSelectInstrument = useCallback((instrumentId) => {
-    console.log('InstrumentDrawer: Enstrüman seçildi:', instrumentId);
     onSelectInstrument(instrumentId);
   }, [onSelectInstrument]);
 
   const handleSelectRhythm = useCallback((rhythmId) => {
-    console.log('InstrumentDrawer: Ritim seçildi:', rhythmId);
     onSelectRhythm(rhythmId);
   }, [onSelectRhythm]);
 
@@ -71,7 +69,6 @@ const InstrumentDrawer = ({ selectedInstrument, selectedRhythm, onSelectInstrume
           <View style={styles.instrumentsList}>
             {instruments.map((instrument) => {
               const isSelected = selectedInstrument === instrument.id;
-              console.log(`Instrument ${instrument.name}: selectedInstrument=${selectedInstrument}, isSelected=${isSelected}`);
               
               return (
                 <TouchableOpacity
@@ -129,7 +126,6 @@ const InstrumentDrawer = ({ selectedInstrument, selectedRhythm, onSelectInstrume
           <View style={styles.rhythmList}>
             {rhythmOptions.map((rhythm) => {
               const isSelected = selectedRhythm === rhythm.id;
-              console.log(`Rhythm ${rhythm.name}: selectedRhythm=${selectedRhythm}, isSelected=${isSelected}`);
               
               return (
                 <TouchableOpacity

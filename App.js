@@ -13,8 +13,7 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated';
-import Tuner from './components/Tuner/Tuner';
-import RecordButton from './components/RecordButton/RecordButton';
+import MainContent from './components/MainContent/MainContent';
 import Footer from './components/Footer/Footer';
 import InstrumentDrawer from './components/InstrumentDrawer/InstrumentDrawer';
 import autoCorrelate from './autocorrelate';
@@ -435,33 +434,14 @@ export default function App() {
             </Text>
           </View>
 
-          <View style={styles.tunerBoxShadowWrap}>
-            <LinearGradient
-              colors={['rgba(62,67,76,1)', 'rgba(30,32,36,1)']}
-              style={styles.tunerBoxOuter}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-            >
-              <LinearGradient
-                colors={['rgba(49,56,61,1)', 'rgba(24,25,29,1)']}
-                style={styles.tunerBoxInner}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
-              >
-                <Tuner
-                  centsOff={centsOff}
-                  frequency={frequency}
-                  isRecording={isRecording}
-                  playingNote={playingNote}
-                />
-
-                <RecordButton
-                  onPress={handleRecordToggle}
-                  pressed={isRecording}
-                />
-              </LinearGradient>
-            </LinearGradient>
-          </View>
+          <MainContent
+            selectedRhythm={selectedRhythm}
+            centsOff={centsOff}
+            frequency={frequency}
+            isRecording={isRecording}
+            playingNote={playingNote}
+            onRecordToggle={handleRecordToggle}
+          />
           <Footer />
         </View>
 
@@ -556,37 +536,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
   },
-  tunerBoxShadowWrap: {
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 24,
-    elevation: 12,
-    zIndex: 1, // Drawer'dan düşük bir değer
-    marginBottom: 20, // 40'tan 20'ye düşürüldü
-    marginTop: 12, // 20'den 12'ye düşürüldü
-    alignItems: 'center',
-    width: SCREEN_WIDTH > 400 ? 300 : '85%',
-    alignSelf: 'center',
-    borderWidth: 3,
-    borderColor: '#3E434C',
-  },
-  tunerBoxOuter: {
-    borderRadius: 20,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 0,
-  },
-  tunerBoxInner: {
-    borderRadius: 17,
-    paddingVertical: 24,
-    paddingHorizontal: 14,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   // Gesture Drawer stilleri - Reanimated ile
   drawerOverlayAnimated: {
     position: 'absolute',
