@@ -38,6 +38,10 @@ export default function App() {
   const [selectedRhythm, setSelectedRhythm] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
+  // Metronom state'leri
+  const [metronomeBpm, setMetronomeBpm] = useState(100);
+  const [isMetronomePlaying, setIsMetronomePlaying] = useState(false);
+  
   const MAX_CENTS_JUMP = 8;
   const recordingRef = useRef(null);
   const isRecordingRef = useRef(false);
@@ -101,6 +105,11 @@ export default function App() {
 
   const handleSelectRhythm = useCallback((rhythmId) => {
     console.log('Seçilen ritim:', rhythmId);
+    
+    // Metronom seçildiğinde çalmayı durdur
+    if (rhythmId === 'metronome') {
+      setIsMetronomePlaying(false);
+    }
     
     // State güncelleme
     setSelectedRhythm(rhythmId);
@@ -389,6 +398,15 @@ export default function App() {
     setPrevCentsOff(0);
   };
 
+  // Metronom fonksiyonları
+  const handleMetronomeBpmChange = useCallback((newBpm) => {
+    setMetronomeBpm(newBpm);
+  }, []);
+
+  const handleMetronomePlayToggle = useCallback(() => {
+    setIsMetronomePlaying(prev => !prev);
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
@@ -441,6 +459,11 @@ export default function App() {
             isRecording={isRecording}
             playingNote={playingNote}
             onRecordToggle={handleRecordToggle}
+            // Metronom props'ları
+            metronomeBpm={metronomeBpm}
+            isMetronomePlaying={isMetronomePlaying}
+            onMetronomeBpmChange={handleMetronomeBpmChange}
+            onMetronomePlayToggle={handleMetronomePlayToggle}
           />
           <Footer />
         </View>

@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Tuner from '../Tuner/Tuner';
 import RecordButton from '../RecordButton/RecordButton';
 import BpmFinder from '../BpmFinder/BpmFinder';
+import Metronome from '../Metronome/Metronome';
 
 /**
  * Ana içerik komponenti - Tuner ve BpmFinder arasında geçiş
@@ -14,7 +15,12 @@ const MainContent = ({
   frequency,
   isRecording,
   playingNote,
-  onRecordToggle
+  onRecordToggle,
+  // Metronom props'ları
+  metronomeBpm,
+  isMetronomePlaying,
+  onMetronomeBpmChange,
+  onMetronomePlayToggle
 }) => {
   return (
     <View style={styles.tunerBoxShadowWrap}>
@@ -30,11 +36,18 @@ const MainContent = ({
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
         >
-          {/* Tuner veya BpmFinder göster */}
+          {/* Tuner, BpmFinder veya Metronome göster */}
           {selectedRhythm === 'tapToBpm' ? (
             <BpmFinder 
               isActive={true}
               onTap={() => {}}
+            />
+          ) : selectedRhythm === 'metronome' ? (
+            <Metronome
+              bpm={metronomeBpm}
+              onBpmChange={onMetronomeBpmChange}
+              isPlaying={isMetronomePlaying}
+              onPlayToggle={onMetronomePlayToggle}
             />
           ) : (
             <>
