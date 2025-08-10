@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native';
 import { Audio } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -10,6 +10,7 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
+import BpmInputModal from './BpmInputModal';
 
 const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) => {
   const [showBpmInput, setShowBpmInput] = useState(false);
@@ -49,27 +50,39 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
   }, []);
 
   useEffect(() => {
+    // Modal açıksa metronome'u durdur
+    if (showBpmInput) {
+      stopMetronome();
+      return;
+    }
+    
     if (isPlaying) startMetronome();
     else stopMetronome();
 
     return () => stopMetronome();
-  }, [isPlaying, bpm]);
+  }, [isPlaying, bpm, showBpmInput]);
 
   const startMetronome = () => {
     stopMetronome();
     const interval = (60 / bpmRef.current) * 1000;
+    const quarterInterval = interval / 4;
 
-    // Symmetrical animation to prevent stuttering
+    // İlk sesi hemen çal
+    playTick();
+
+    // Gerçek metronom animasyonu: orta → sola → orta → sağa → orta
     pendulumAngle.value = withRepeat(
       withSequence(
-        withTiming(45, { duration: interval / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(-45, { duration: interval, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: interval / 2, easing: Easing.inOut(Easing.ease) })
+        withTiming(-35, { duration: quarterInterval, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: quarterInterval, easing: Easing.inOut(Easing.ease) }),
+        withTiming(35, { duration: quarterInterval, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: quarterInterval, easing: Easing.inOut(Easing.ease) })
       ),
       -1,
       false
     );
 
+    // Her animasyon döngüsünde ses çal (BPM'e göre)
     intervalRef.current = setInterval(playTick, interval);
   };
 
@@ -78,7 +91,7 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    pendulumAngle.value = withTiming(0, { duration: 200 });
+    pendulumAngle.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.ease) });
   };
 
   const playTick = async () => {
@@ -135,97 +148,100 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
     setShowBpmInput(false);
   };
 
+  const handleModalClose = () => {
+    setShowBpmInput(false);
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.pendulumContainer}>
-        <Animated.View style={[styles.pendulum, pendulumAnimatedStyle]} />
-        <View style={styles.pivot} />
-      </View>
-
-      <TouchableOpacity style={styles.bpmDisplay} onPress={handleBpmTap} activeOpacity={0.8}>
-        <Text style={styles.bpmValue}>{bpmRef.current}</Text>
-        <Text style={styles.bpmLabel}>BPM</Text>
-      </TouchableOpacity>
-
-      <View style={styles.controlsContainer}>
-        <View style={styles.shadowWrap}>
-          <TouchableOpacity
-            onPress={handleMinusPress}
-            onLongPress={() => startHoldIncrement(-1)}
-            onPressOut={stopHold}
-            activeOpacity={0.7}
-            style={styles.controlButton}
-          >
-            <Text style={styles.controlButtonText}>-</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.shadowWrap}>
-          <LinearGradient
-            colors={isPlaying ? ['#EA506F', '#8b3042'] : ['#23262B', '#282B30']}
-            start={{ x: 0.2, y: 0 }}
-            end={{ x: 0.8, y: 1 }}
-            style={styles.playButtonBase}
-          >
-            <TouchableOpacity
-              style={styles.touchable}
-              onPress={onPlayToggle}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={isPlaying ? ['#8b3042', '#EA506F'] : ['#282B30', '#23262B']}
-                start={{ x: 0.2, y: 0 }}
-                end={{ x: 0.8, y: 1 }}
-                style={styles.playButtonInner}
-              >
-                <Text style={styles.playButtonText}>{isPlaying ? '■' : '▶'}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </LinearGradient>
-        </View>
-
-        <View style={styles.shadowWrap}>
-          <TouchableOpacity
-            onPress={handlePlusPress}
-            onLongPress={() => startHoldIncrement(1)}
-            onPressOut={stopHold}
-            activeOpacity={0.7}
-            style={styles.controlButton}
-          >
-            <Text style={styles.controlButtonText}>+</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Modal visible={showBpmInput} transparent animationType="fade" onRequestClose={() => setShowBpmInput(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>BPM Değeri Girin</Text>
-            <TextInput
-              style={styles.bpmInput}
-              value={tempBpm}
-              onChangeText={setTempBpm}
-              keyboardType="numeric"
-              maxLength={3}
-              autoFocus
-              placeholder="100"
-              placeholderTextColor="#666"
-              selectTextOnFocus
-              onSubmitEditing={handleBpmInputConfirm}
-              returnKeyType="done"
+    <>
+      <View style={styles.container}>
+        <View style={styles.pendulumContainer}>
+          <View style={styles.pivotContainer}>
+            <View style={styles.pivotShadow} />
+            <View style={styles.pivot} />
+          </View>
+          <Animated.View style={[styles.pendulumWrapper, pendulumAnimatedStyle]}>
+            <LinearGradient
+              colors={['#EA506F', '#8b3042', '#EA506F']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.pendulum}
             />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setShowBpmInput(false)}>
-                <Text style={styles.cancelButtonText}>İptal</Text>
+            <View style={styles.pendulumWeight} />
+          </Animated.View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.bpmDisplay} 
+          onPress={handleBpmTap} 
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={styles.bpmValue}>{bpmRef.current}</Text>
+          <Text style={styles.bpmLabel}>BPM</Text>
+        </TouchableOpacity>
+
+        <View style={styles.controlsContainer}>
+          <View style={styles.shadowWrap}>
+            <TouchableOpacity
+              onPress={handleMinusPress}
+              onLongPress={() => startHoldIncrement(-1)}
+              onPressOut={stopHold}
+              activeOpacity={0.7}
+              style={styles.controlButton}
+            >
+              <Text style={styles.controlButtonText}>-</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.shadowWrap}>
+            <LinearGradient
+              colors={isPlaying ? ['#EA506F', '#8b3042'] : ['#23262B', '#282B30']}
+              start={{ x: 0.2, y: 0 }}
+              end={{ x: 0.8, y: 1 }}
+              style={styles.playButtonBase}
+            >
+              <TouchableOpacity
+                style={styles.touchable}
+                onPress={onPlayToggle}
+                activeOpacity={0.7}
+              >
+                <LinearGradient
+                  colors={isPlaying ? ['#8b3042', '#EA506F'] : ['#282B30', '#23262B']}
+                  start={{ x: 0.2, y: 0 }}
+                  end={{ x: 0.8, y: 1 }}
+                  style={styles.playButtonInner}
+                >
+                  <Text style={styles.playButtonText}>{isPlaying ? '■' : '▶'}</Text>
+                </LinearGradient>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.confirmButton]} onPress={handleBpmInputConfirm}>
-                <Text style={styles.confirmButtonText}>Tamam</Text>
-              </TouchableOpacity>
-            </View>
+            </LinearGradient>
+          </View>
+
+          <View style={styles.shadowWrap}>
+            <TouchableOpacity
+              onPress={handlePlusPress}
+              onLongPress={() => startHoldIncrement(1)}
+              onPressOut={stopHold}
+              activeOpacity={0.7}
+              style={styles.controlButton}
+            >
+              <Text style={styles.controlButtonText}>+</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </View>
+      </View>
+
+      {showBpmInput && (
+        <BpmInputModal
+          visible={showBpmInput}
+          tempBpm={tempBpm}
+          onTempBpmChange={setTempBpm}
+          onConfirm={handleBpmInputConfirm}
+          onCancel={handleModalClose}
+        />
+      )}
+    </>
   );
 };
 
@@ -236,57 +252,111 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   pendulumContainer: {
-    height: 160, // Adjusted height
+    height: 180,
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'flex-end', // Anchor pendulum at the bottom of container
-    marginBottom: 30, // Space between pendulum and BPM display
+    justifyContent: 'flex-end',
+    marginBottom: 30,
+  },
+  pivotContainer: {
+    position: 'absolute',
+    top: 0,
+    zIndex: 3,
+    alignItems: 'center',
+  },
+  pivotShadow: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    position: 'absolute',
+    top: 2,
   },
   pivot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#bfc2c7',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#EA506F',
+    borderWidth: 2,
+    borderColor: '#8b3042',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  pendulumWrapper: {
     position: 'absolute',
-    top: 0, // Position pivot at the top of the animation anchor
-    zIndex: 2,
+    top: 8,
+    alignItems: 'center',
+    transformOrigin: 'top center',
   },
   pendulum: {
-    width: 4,
-    height: 120, // Adjusted height
-    backgroundColor: '#EA506F',
-    borderRadius: 2,
-    transformOrigin: 'top center', // Rotate from the top
+    width: 6,
+    height: 140,
+    borderRadius: 3,
     position: 'absolute',
-    top: 6, // Start below the pivot
+    top: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  pendulumWeight: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#EA506F',
+    borderWidth: 3,
+    borderColor: '#8b3042',
+    position: 'absolute',
+    bottom: -150,
+    left: -12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
   },
   bpmDisplay: {
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 18,
     backgroundColor: 'rgba(40,43,48,0.95)',
-    minWidth: 150,
-    marginBottom: 30, // Space between BPM display and controls
+    minWidth: 160,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
   bpmValue: {
-    fontSize: 40,
+    fontSize: 42,
     fontWeight: 'bold',
     color: '#fff',
     fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
     letterSpacing: 1,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   bpmLabel: {
     fontSize: 16,
     color: '#bbb',
     marginTop: 4,
     fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
+    fontWeight: '500',
   },
   controlsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    width: '80%', // Control width
+    width: '80%',
   },
   shadowWrap: {
     borderRadius: 100,
@@ -343,6 +413,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
   },
   modalContent: {
     backgroundColor: '#2c3136',
@@ -352,6 +428,12 @@ const styles = StyleSheet.create({
     minWidth: 280,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 16,
+    zIndex: 10000,
   },
   modalTitle: {
     fontSize: 18,
