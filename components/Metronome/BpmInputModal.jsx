@@ -7,8 +7,13 @@ const BpmInputModal = ({ visible, tempBpm, onTempBpmChange, onConfirm, onCancel 
 
   return (
     <View style={styles.overlay}>
+      <LinearGradient
+        colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.6)']}
+        style={styles.gradient}
+      />
       <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>BPM Değeri Girin</Text>
+        
         <TextInput
           style={styles.bpmInput}
           value={tempBpm}
@@ -16,46 +21,39 @@ const BpmInputModal = ({ visible, tempBpm, onTempBpmChange, onConfirm, onCancel 
           keyboardType="numeric"
           maxLength={3}
           autoFocus
-          placeholder="100"
-          placeholderTextColor="#666"
+          placeholder="120"
+          placeholderTextColor="#888"
           selectTextOnFocus
           onSubmitEditing={onConfirm}
           returnKeyType="done"
         />
-        <View style={styles.modalButtons}>
-          <View style={styles.shadowWrap}>
-            <TouchableOpacity 
-              style={styles.modalButton}
-              onPress={onCancel}
-              activeOpacity={0.7}
+        
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={onCancel}
+            activeOpacity={0.7}
+          >
+            <LinearGradient
+              colors={['#484F58', '#3A4047']}
+              style={styles.buttonGradient}
             >
-              <LinearGradient
-                colors={['#23262B', '#282B30']}
-                start={{ x: 0.2, y: 0 }}
-                end={{ x: 0.8, y: 1 }}
-                style={styles.buttonGradient}
-              >
-                <Text style={styles.cancelButtonText}>İptal</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+              <Text style={styles.buttonText}>İptal</Text>
+            </LinearGradient>
+          </TouchableOpacity>
           
-          <View style={styles.shadowWrap}>
-            <TouchableOpacity 
-              style={styles.modalButton}
-              onPress={onConfirm}
-              activeOpacity={0.7}
+          <TouchableOpacity 
+            style={styles.button}
+            onPress={onConfirm}
+            activeOpacity={0.7}
+          >
+            <LinearGradient
+              colors={['#EA506F', '#D32F2F']}
+              style={styles.buttonGradient}
             >
-              <LinearGradient
-                colors={['#EA506F', '#8b3042']}
-                start={{ x: 0.2, y: 0 }}
-                end={{ x: 0.8, y: 1 }}
-                style={styles.buttonGradient}
-              >
-                <Text style={styles.confirmButtonText}>Tamam</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
+              <Text style={[styles.buttonText, styles.confirmButtonText]}>Tamam</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -69,81 +67,82 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
     elevation: 9999,
   },
+  gradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
   modalContent: {
-    backgroundColor: '#2c3136',
+    backgroundColor: '#2C3136',
     borderRadius: 20,
-    padding: 30,
+    padding: 25,
     alignItems: 'center',
-    minWidth: 280,
+    width: '80%',
+    maxWidth: 320,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.1)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 16,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#FFF',
     marginBottom: 20,
-    fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
+    fontFamily: Platform.OS === 'android' ? 'Roboto' : 'System',
   },
   bpmInput: {
-    width: 120,
-    height: 50,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    color: '#fff',
-    fontSize: 24,
+    width: '90%',
+    height: 70,
+    backgroundColor: '#22252A',
+    borderRadius: 15,
+    color: '#FFF',
+    fontSize: 32,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
-    fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
+    marginBottom: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
   },
-  modalButtons: {
+  buttonContainer: {
     flexDirection: 'row',
-    gap: 16,
+    justifyContent: 'space-between',
+    width: '100%',
   },
-  shadowWrap: {
-    borderRadius: 100,
-    shadowColor: '#16191b',
-    shadowOffset: { width: 2, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+  button: {
+    flex: 1,
+    marginHorizontal: 8,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
     elevation: 8,
   },
-  modalButton: {
-    borderRadius: 100,
-    overflow: 'hidden',
-  },
   buttonGradient: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 100,
-    minWidth: 80,
+    paddingVertical: 15,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelButtonText: {
-    color: '#bfc2c7',
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
+  buttonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#E0E0E0',
+    fontFamily: Platform.OS === 'android' ? 'Roboto' : 'System',
   },
   confirmButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: Platform.OS === 'android' ? 'Roboto' : undefined,
+    color: '#FFF',
   },
 });
 

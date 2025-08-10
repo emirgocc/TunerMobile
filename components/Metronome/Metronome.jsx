@@ -50,6 +50,10 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
   }, []);
 
   useEffect(() => {
+    console.log('showBpmInput değişti:', showBpmInput);
+  }, [showBpmInput]);
+
+  useEffect(() => {
     // Modal açıksa metronome'u durdur
     if (showBpmInput) {
       stopMetronome();
