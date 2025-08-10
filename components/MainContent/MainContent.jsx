@@ -20,7 +20,9 @@ const MainContent = ({
   metronomeBpm,
   isMetronomePlaying,
   onMetronomeBpmChange,
-  onMetronomePlayToggle
+  onMetronomePlayToggle,
+  // Modal props'ları
+  onBpmTap
 }) => {
   return (
     <View style={styles.tunerBoxShadowWrap}>
@@ -48,6 +50,7 @@ const MainContent = ({
               onBpmChange={onMetronomeBpmChange}
               isPlaying={isMetronomePlaying}
               onPlayToggle={onMetronomePlayToggle}
+              onBpmTap={onBpmTap}
             />
           ) : (
             <>

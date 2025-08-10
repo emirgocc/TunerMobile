@@ -10,11 +10,9 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
-import BpmInputModal from './BpmInputModal';
 
-const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) => {
-  const [showBpmInput, setShowBpmInput] = useState(false);
-  const [tempBpm, setTempBpm] = useState(bpm.toString());
+
+const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle, onBpmTap }) => {
   const soundRef = useRef(null);
   const intervalRef = useRef(null);
   const holdIntervalRef = useRef(null);
@@ -50,21 +48,11 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
   }, []);
 
   useEffect(() => {
-    console.log('showBpmInput değişti:', showBpmInput);
-  }, [showBpmInput]);
-
-  useEffect(() => {
-    // Modal açıksa metronome'u durdur
-    if (showBpmInput) {
-      stopMetronome();
-      return;
-    }
-    
     if (isPlaying) startMetronome();
     else stopMetronome();
 
     return () => stopMetronome();
-  }, [isPlaying, bpm, showBpmInput]);
+  }, [isPlaying, bpm]);
 
   const startMetronome = () => {
     stopMetronome();
@@ -138,22 +126,9 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
   };
 
   const handleBpmTap = () => {
-    setTempBpm(String(bpmRef.current));
-    setShowBpmInput(true);
-  };
-
-  const handleBpmInputConfirm = () => {
-    const newBpm = parseInt(tempBpm, 10);
-    if (isNaN(newBpm) || newBpm < 20 || newBpm > 300) {
-      Alert.alert('Geçersiz BPM', 'BPM değeri 20-300 arasında olmalıdır.');
-      return;
+    if (onBpmTap) {
+      onBpmTap();
     }
-    changeBpm(newBpm);
-    setShowBpmInput(false);
-  };
-
-  const handleModalClose = () => {
-    setShowBpmInput(false);
   };
 
   return (
@@ -181,7 +156,7 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.bpmValue}>{bpmRef.current}</Text>
+          <Text style={styles.bpmValue}>{bpm}</Text>
           <Text style={styles.bpmLabel}>BPM</Text>
         </TouchableOpacity>
 
@@ -236,15 +211,6 @@ const Metronome = ({ bpm = 100, onBpmChange, isPlaying = false, onPlayToggle }) 
         </View>
       </View>
 
-      {showBpmInput && (
-        <BpmInputModal
-          visible={showBpmInput}
-          tempBpm={tempBpm}
-          onTempBpmChange={setTempBpm}
-          onConfirm={handleBpmInputConfirm}
-          onCancel={handleModalClose}
-        />
-      )}
     </>
   );
 };

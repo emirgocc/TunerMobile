@@ -16,6 +16,7 @@ import Animated, {
 import MainContent from './components/MainContent/MainContent';
 import Footer from './components/Footer/Footer';
 import InstrumentDrawer from './components/InstrumentDrawer/InstrumentDrawer';
+import BpmInputModal from './components/Metronome/BpmInputModal';
 import autoCorrelate from './autocorrelate';
 import {
   noteStrings,
@@ -41,6 +42,10 @@ export default function App() {
   // Metronom state'leri
   const [metronomeBpm, setMetronomeBpm] = useState(100);
   const [isMetronomePlaying, setIsMetronomePlaying] = useState(false);
+  
+  // Modal state'leri
+  const [showBpmInput, setShowBpmInput] = useState(false);
+  const [tempBpm, setTempBpm] = useState('100');
   
   const MAX_CENTS_JUMP = 8;
   const recordingRef = useRef(null);
@@ -407,6 +412,26 @@ export default function App() {
     setIsMetronomePlaying(prev => !prev);
   }, []);
 
+  // Modal fonksiyonları
+  const handleBpmTap = useCallback(() => {
+    setTempBpm(metronomeBpm.toString());
+    setShowBpmInput(true);
+  }, [metronomeBpm]);
+
+  const handleBpmInputConfirm = useCallback(() => {
+    const newBpm = parseInt(tempBpm, 10);
+    if (isNaN(newBpm) || newBpm < 20 || newBpm > 300) {
+      Alert.alert('Geçersiz BPM', 'BPM değeri 20-300 arasında olmalıdır.');
+      return;
+    }
+    setMetronomeBpm(newBpm);
+    setShowBpmInput(false);
+  }, [tempBpm]);
+
+  const handleModalClose = useCallback(() => {
+    setShowBpmInput(false);
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
@@ -464,6 +489,8 @@ export default function App() {
             isMetronomePlaying={isMetronomePlaying}
             onMetronomeBpmChange={handleMetronomeBpmChange}
             onMetronomePlayToggle={handleMetronomePlayToggle}
+            // Modal props'ları
+            onBpmTap={handleBpmTap}
           />
           <Footer />
         </View>
@@ -493,6 +520,17 @@ export default function App() {
               </Animated.View>
             </PanGestureHandler>
           </>
+        )}
+
+        {/* Global Modal */}
+        {showBpmInput && (
+          <BpmInputModal
+            visible={showBpmInput}
+            tempBpm={tempBpm}
+            onTempBpmChange={setTempBpm}
+            onConfirm={handleBpmInputConfirm}
+            onCancel={handleModalClose}
+          />
         )}
       </View>
     </GestureHandlerRootView>
