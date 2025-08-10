@@ -22,7 +22,9 @@ const MainContent = ({
   onMetronomeBpmChange,
   onMetronomePlayToggle,
   // Modal props'ları
-  onBpmTap
+  onBpmTap,
+  // BpmFinder props'ları
+  onSendToMetronome
 }) => {
   return (
     <View style={styles.tunerBoxShadowWrap}>
@@ -43,6 +45,7 @@ const MainContent = ({
             <BpmFinder 
               isActive={true}
               onTap={() => {}}
+              onSendToMetronome={onSendToMetronome}
             />
           ) : selectedRhythm === 'metronome' ? (
             <Metronome

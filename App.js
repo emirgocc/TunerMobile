@@ -432,6 +432,14 @@ export default function App() {
     setShowBpmInput(false);
   }, []);
 
+  // BpmFinder fonksiyonları
+  const handleSendToMetronome = useCallback((bpmValue) => {
+    console.log('BpmFinder\'dan metronome\'a gönderiliyor:', bpmValue);
+    setMetronomeBpm(bpmValue);
+    setSelectedRhythm('metronome');
+    setSelectedInstrument(null);
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
@@ -491,6 +499,8 @@ export default function App() {
             onMetronomePlayToggle={handleMetronomePlayToggle}
             // Modal props'ları
             onBpmTap={handleBpmTap}
+            // BpmFinder props'ları
+            onSendToMetronome={handleSendToMetronome}
           />
           <Footer />
         </View>
